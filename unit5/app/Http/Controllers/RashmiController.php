@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models
+use App\Models\Rashmi;
 
 class RashmiController extends Controller
 {
@@ -12,7 +12,12 @@ class RashmiController extends Controller
      */
     public function index()
     {
-        //
+        $data = Rashmi::all();
+        return response()->json([
+            'status' => 'success',
+            'data' => $data,
+            'count' => count($data)
+        ]);
     }
 
     /**
@@ -20,11 +25,18 @@ class RashmiController extends Controller
      */
     public function store(Request $request)
     {
-        $data = Rashmi::create([
-            'name' => $request->name,
-            'email' => $request->email
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email'
         ]);
-        return redirect('/abc');
+
+        $data = Rashmi::create($validated);
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data created successfully',
+            'data' => $data
+        ], 201);
     }
 
     /**
@@ -32,7 +44,19 @@ class RashmiController extends Controller
      */
     public function show(string $id)
     {
-        return Rashmi::find($id);
+        $data = Rashmi::find($id);
+        
+        if (!$data) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data not found'
+            ], 404);
+        }
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -41,13 +65,26 @@ class RashmiController extends Controller
     public function update(Request $request, string $id)
     {
         $data = Rashmi::find($id);
-        $data->update(
-            [
-                'name' => $request->name,
-                'email' => $request->email
-            ]
-        );
-        return response()->json(['message' => 'Data updated successfully']);
+        
+        if (!$data) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data not found'
+            ], 404);
+        }
+        
+        $validated = $request->validate([
+            'name' => 'sometimes|string',
+            'email' => 'sometimes|email'
+        ]);
+        
+        $data->update($validated);
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data updated successfully',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -56,7 +93,19 @@ class RashmiController extends Controller
     public function destroy(string $id)
     {
         $data = Rashmi::find($id);
+        
+        if (!$data) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data not found'
+            ], 404);
+        }
+        
         $data->delete();
-        return response()->json(['message' => 'Data deleted successfully']);
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data deleted successfully'
+        ]);
     }
 }
